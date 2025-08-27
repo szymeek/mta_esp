@@ -1,5 +1,5 @@
 """
-Main game logic with saving all screenshots for debug
+Main game logic with OCR result CSV logging
 """
 
 import time
@@ -8,7 +8,8 @@ from screen_capture import capture_game_window
 from cropper import crop_for_position
 from ocr_module import detect_character_fast as detect_character
 from keyboard_interface import KeyboardInterface
-from config import CYCLE_DELAY, POSITION_DELAY
+from config import POSITION_DELAY, CYCLE_DELAY
+from ocr_csv import append_ocr_result_to_csv
 
 class GameBot:
     def __init__(self, esp_port=None):
@@ -37,25 +38,14 @@ class GameBot:
 
             time.sleep(POSITION_DELAY)
 
-            # Capture and save initial full screenshot after Alt press
-            initial_screenshot = capture_game_window()
-            initial_screenshot.save(f"scr/debug_initial_screenshot_cycle_{self.cycle_count}.png")
-            print(f"Saved initial full screenshot for cycle {self.cycle_count}")
-
             for position in [1, 2, 3]:
                 print(f"\nStep {position + 1}: Processing position {position}")
-                
-                # Take a fresh screenshot per position
                 screenshot = capture_game_window()
-                screenshot.save(f"scr/debug_full_screenshot_cycle_{self.cycle_count}_pos_{position}.png")
-                print(f"Saved full screenshot for cycle {self.cycle_count} position {position}")
-
                 cropped_image = crop_for_position(screenshot, position)
 
-                # Save cropped image with detailed naming
-                debug_filename = f"scr/debug_cropped_cycle_{self.cycle_count}_pos_{position}.png"
+                debug_filename = f"scr/debug_position_{position}.png"
                 cropped_image.save(debug_filename)
-                print(f"Saved cropped debug image: {debug_filename}")
+                print(f"Saved debug crop: {debug_filename}")
 
                 ocr_result = detect_character(cropped_image)
                 print(f"OCR full result: {ocr_result}")
@@ -68,6 +58,9 @@ class GameBot:
 
                 print(f"   Detected: '{detected_char}' (confidence: {confidence})")
 
+                # Log OCR result to CSV
+                append_ocr_result_to_csv(self.cycle_count, position, detected_char, confidence)
+
                 if not self.keyboard.press_character_key(detected_char):
                     print(f"   ❌ Failed to send '{detected_char}' key")
                     return False
@@ -79,8 +72,7 @@ class GameBot:
 
             print("\nStep 8: Taking final screenshot...")
             final_screenshot = capture_game_window()
-            final_screenshot.save(f"scr/debug_final_screenshot_cycle_{self.cycle_count}.png")
-            print(f"Saved final screenshot for cycle {self.cycle_count}")
+            final_screenshot.save(f"scr/debug_final_screenshot_{self.cycle_count}.png")
 
             print(f"✅ Cycle #{self.cycle_count} completed successfully")
             return True
