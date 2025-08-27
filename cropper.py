@@ -1,9 +1,15 @@
 """
-Cropper module handles image cropping for the three screen positions
+Cropper module for image cropping per position
 """
 
 from PIL import Image
-from config import crop_params
+
+# Your final crop parameters
+crop_params = {
+    1: {'shave_left': 0.17, 'shave_top': 0.16, 'shave_right': 0.70, 'shave_bottom': 0.63},
+    2: {'shave_left': 0.45, 'shave_top': 0.16, 'shave_right': 0.42, 'shave_bottom': 0.63},
+    3: {'shave_left': 0.72, 'shave_top': 0.16, 'shave_right': 0.15, 'shave_bottom': 0.63},
+}
 
 def first_crop(image):
     """Apply first crop - 16% width × 22% height from left bottom"""
@@ -31,14 +37,3 @@ def crop_for_position(image, position):
     crop1 = first_crop(image)
     crop2 = shave_crop(crop1, position)
     return crop2
-
-if __name__ == "__main__":
-    # Test cropping with sample images
-    import os
-    os.makedirs("scr/test_results", exist_ok=True)
-    for i in [1, 2, 3]:
-        if os.path.exists(f"scr/{i}.png"):
-            img = Image.open(f"scr/{i}.png")
-            crop = crop_for_position(img, i)
-            crop.save(f"scr/test_results/position_{i}_crop.png")
-    print("Test crops saved in scr/test_results/")
