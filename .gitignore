@@ -2,3 +2,4 @@ scr/
 __pycache__/
 ocr_results.csv
 timing_data.csv
+screenshots/
