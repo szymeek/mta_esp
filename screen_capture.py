@@ -56,6 +56,9 @@ if __name__ == "__main__":
     # Test screenshot capture
     import os
     os.makedirs("scr", exist_ok=True)
+    wait_time = 3
+    print(f"Taking screenshot in {wait_time} seconds... Switch to the game window!")
+    time.sleep(wait_time)
     
     try:
         img = capture_game_window("MTA")
